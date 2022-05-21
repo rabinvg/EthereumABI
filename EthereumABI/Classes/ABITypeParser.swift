@@ -49,10 +49,9 @@ public struct ABITypeParser {
         guard let t = type, tail == nil else {throw ABI.ParsingError.elementTypeInvalid}
         return t
     }
-    
+    private static let recursiveParseTypeMatcher = try! NSRegularExpression(pattern: ABI.TypeParsingExpressions.typeEatingRegex, options: NSRegularExpression.Options.dotMatchesLineSeparators)
     static func recursiveParseType(_ string: String) -> (type: ABI.Element.ParameterType?, tail: String?) {
-        let matcher = try! NSRegularExpression(pattern: ABI.TypeParsingExpressions.typeEatingRegex, options: NSRegularExpression.Options.dotMatchesLineSeparators)
-        let match = matcher.matches(in: string, options: NSRegularExpression.MatchingOptions.anchored, range: string.fullNSRange)
+        let match = recursiveParseTypeMatcher.matches(in: string, options: NSRegularExpression.MatchingOptions.anchored, range: string.fullNSRange)
         guard match.count == 1 else {
             return (nil, nil)
         }
@@ -82,10 +81,10 @@ public struct ABITypeParser {
         }
         return recursiveParseArray(baseType: type!, string: tail)
     }
-    
+
+    private static let recursiveParseArrayMatcher = try! NSRegularExpression(pattern: ABI.TypeParsingExpressions.arrayEatingRegex, options: NSRegularExpression.Options.dotMatchesLineSeparators)
     static func recursiveParseArray(baseType: ABI.Element.ParameterType, string: String) -> (type: ABI.Element.ParameterType?, tail: String?) {
-        let matcher = try! NSRegularExpression(pattern: ABI.TypeParsingExpressions.arrayEatingRegex, options: NSRegularExpression.Options.dotMatchesLineSeparators)
-        let match = matcher.matches(in: string, options: NSRegularExpression.MatchingOptions.anchored, range: string.fullNSRange)
+        let match = recursiveParseArrayMatcher.matches(in: string, options: NSRegularExpression.MatchingOptions.anchored, range: string.fullNSRange)
         guard match.count == 1 else {return (nil, nil)}
         var tail: String = ""
         var type: ABI.Element.ParameterType?
